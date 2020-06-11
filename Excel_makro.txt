@@ -1,0 +1,811 @@
+/* Veri setini oluşturulurken Excel'de bulunan makro özelliği kullanılarak veri seti istenilen formata hazırlanması */
+
+Dim adet As Long
+Dim veri_adeti As Long
+Dim sutunSayisi As Long
+Dim hastaID As Long
+Dim hastaToplam As Long
+Dim yasToplam As Long
+Dim satir As Long
+Dim toplamCA19 As Double
+Dim toplamAFP As Double
+Dim toplamaCEA As Double
+Dim toplamALT As Double
+Dim toplamCRM As Double
+Dim minimum As Double
+Dim maksimum As Double
+Dim gelisSayisi As Long
+Dim gelisAdet As Long
+Dim yedekTarih As String
+
+satir = 2
+For i = 1 To Sayfa9.Cells(80000, 1).End(xlUp).Row
+Next i
+veri_adeti = i - 2
+
+hastaToplam = 1
+t = 3
+For i = 2 To veri_adeti + 1
+    
+    adet = 0
+    yasToplam = 0
+    hastaID = Sayfa9.Cells(i, 1).Value
+    
+    toplamALT = 0
+    toplamCA19 = 0
+    toplamCRM = 0
+    toplamAFP = 0
+    toplamaCEA = 0
+    yedek = i
+    
+    'Hasta toplamının bulunması’
+
+    For j = i To veri_adeti + 1
+        If Sayfa9.Cells(j, 1).Value = hastaID Then
+            adet = (adet + 1)
+        Else
+            hastaToplam = (hastaToplam + 1)
+            Exit For
+        End If
+    Next j
+
+    Sayfa10.Cells(1, 25).Value = hastaToplam
+
+
+
+    'Her bir hasta icin geliş sayısının bulunması’
+
+    gelisSayisi = 1
+    yasToplam = Sayfa9.Cells(i, 2).Value
+    For h = yedek To yedek + adet - 1
+        yedekTarih = Sayfa9.Cells(h, 15).Value
+        gelisAdet = 0
+        For k = h To yedek + adet - 1
+            If Sayfa9.Cells(k, 15).Value = yedekTarih Then
+                gelisAdet = (gelisAdet + 1)
+            Else
+                yasToplam = yasToplam + Sayfa9.Cells(k, 2).Value
+                gelisSayisi = (gelisSayisi + 1)
+                Exit For
+            End If
+        Next k
+        h = h + gelisAdet - 1
+    Next h
+    
+    Sayfa10.Cells(satir, 1).Value = hastaID
+    Sayfa10.Cells(satir, 2).Value = WorksheetFunction.Round(yasToplam / gelisSayisi, 0)
+    Sayfa10.Cells(satir, 3).Value = Sayfa9.Cells(i, 3).Value
+    Sayfa10.Cells(satir, 14).Value = gelisSayisi
+    Sayfa10.Cells(satir, 15).Value = Sayfa9.Cells(i, 14).Value
+    
+   'Her bir parametrenin ortalamasını alma’
+
+    m = 0
+    For k = 0 To adet - 1
+        If IsEmpty(Sayfa9.Cells(yedek + k, 4).Value) = False Then
+            toplamCA19 = toplamCA19 + Sayfa9.Cells(yedek + k, 4).Value
+            m = m + 1
+         End If
+    Next k
+
+    If m = 0 Then
+        Sayfa10.Cells(satir, 4).Value = 0
+    Else
+        Sayfa10.Cells(satir, 4).Value = toplamCA19 / m
+    End If
+    
+    m = 0
+    For k = 0 To adet - 1
+        If IsEmpty(Sayfa9.Cells(yedek + k, 5).Value) = False Then
+            toplamALT = toplamALT + Sayfa9.Cells(yedek + k, 5).Value
+            m = m + 1
+         End If
+    Next k
+
+    If m = 0 Then
+        Sayfa10.Cells(satir, 5).Value = 0
+    Else
+        Sayfa10.Cells(satir, 5).Value = toplamALT / m
+    End If
+    
+    m = 0
+    For k = 0 To adet - 1
+        If IsEmpty(Sayfa9.Cells(yedek + k, 6).Value) = False Then
+            toplamCRM = toplamCRM + Sayfa9.Cells(yedek + k, 6).Value
+            m = m + 1
+         End If
+    Next k
+
+    If m = 0 Then
+        Sayfa10.Cells(satir, 6).Value = 0
+    Else
+        Sayfa10.Cells(satir, 6).Value = toplamCRM / m
+    End If
+    
+    m = 0
+    For k = 0 To adet - 1
+        If IsEmpty(Sayfa9.Cells(yedek + k, 7).Value) = False Then
+            toplamaCEA = toplamaCEA + Sayfa9.Cells(yedek + k, 7).Value
+            m = m + 1
+         End If
+    Next k
+
+    If m = 0 Then
+        Sayfa10.Cells(satir, 7).Value = 0
+    Else
+        Sayfa10.Cells(satir, 7).Value = toplamaCEA / m
+    End If
+    
+    m = 0
+    For k = 0 To adet - 1
+        If IsEmpty(Sayfa9.Cells(yedek + k, 8).Value) = False Then
+            toplamAFP = toplamAFP + Sayfa9.Cells(yedek + k, 8).Value
+            m = m + 1
+         End If
+    Next k
+
+    If m = 0 Then
+        Sayfa10.Cells(satir, 8).Value = 0
+    Else
+        Sayfa10.Cells(satir, 8).Value = toplamAFP / m
+    End If
+    
+    'Durumlarin ortalama degerler icinde mi kontrol’
+    If Sayfa10.Cells(satir, 4).Value <= 27 Then
+       Sayfa10.Cells(satir, 9).Value = 1
+    ElseIf Not Sayfa10.Cells(satir, 4).Value <= 27 Then
+       Sayfa10.Cells(satir, 9).Value = 0
+    End If
+    
+    If Sayfa10.Cells(satir, 3).Value = "1" And Sayfa10.Cells(satir, 5).Value <= 41 Then
+        Sayfa10.Cells(satir, 10).Value = 1
+            ElseIf Sayfa10.Cells(satir, 3).Value = "1" And Sayfa10.Cells(satir, 5).Value >= 41 Then
+                Sayfa10.Cells(satir, 10).Value = 0
+                   ElseIf Sayfa10.Cells(satir, 3).Value = "0" And Sayfa10.Cells(satir, 5).Value <= 33 Then
+                        Sayfa10.Cells(satir, 10).Value = 1
+                            ElseIf Sayfa10.Cells(satir, 3).Value = "0" And Sayfa10.Cells(satir, 5).Value >= 33 Then
+                                Sayfa10.Cells(satir, 10).Value = 0
+                            End If
+
+    If Sayfa10.Cells(satir, 6).Value <= 0.5 Then
+       Sayfa10.Cells(satir, 11).Value = 1
+    ElseIf Not Sayfa10.Cells(satir, 6).Value <= 0.5 Then
+       Sayfa10.Cells(satir, 11).Value = 0
+    End If
+
+    If Sayfa10.Cells(satir, 7).Value <= 4.7 Then
+       Sayfa10.Cells(satir, 12).Value = 1
+    ElseIf Not Sayfa10.Cells(satir, 7).Value <= 4.7 Then
+       Sayfa10.Cells(satir, 12).Value = 0
+    End If
+    
+    If Sayfa10.Cells(satir, 7).Value <= 7 Then
+       Sayfa10.Cells(satir, 13).Value = 1
+    ElseIf Not Sayfa10.Cells(satir, 7).Value <= 7 Then
+       Sayfa10.Cells(satir, 13).Value = 0
+    End If
+
+    satir = satir + 1
+    t = t + 1
+    i = i + adet - 1
+Next i
+    
+End Sub
+
+Veri Çekme
+
+Sub Cek()
+
+Dim i As Long
+Dim j As Long
+Dim k As Long
+Dim m As Long
+Dim veri_adeti As Long
+Dim totalVeri As Long
+Dim minimum As Double
+Dim maksimum As Double
+
+'2012
+For i = 1 To Sayfa1.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+Sayfa8.Cells(1, 18).Value = veri_adeti
+
+For j = 2 To veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa1.Cells(j, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa1.Cells(j, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa1.Cells(j, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa1.Cells(j, 2).Value, 0)
+    
+    'Hastaların cinsiyetlerini yazdırma'
+
+    If Sayfa1.Cells(j, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+    
+    'Parametre değerlerinin yazdırılması
+
+    If Sayfa1.Cells(j, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa1.Cells(j, 12).Value
+    ElseIf Sayfa1.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa1.Cells(j, 12).Value
+    ElseIf Sayfa1.Cells(j, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa1.Cells(j, 12).Value
+    ElseIf Sayfa1.Cells(j, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa1.Cells(j, 12).Value
+    ElseIf Sayfa1.Cells(j, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa1.Cells(j, 12).Value
+    End If
+
+    minimum = Sayfa1.Cells(j, 14).Value
+    maksimum = Sayfa1.Cells(j, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdirilmasi'
+    If Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+    If Sayfa8.Cells(j, 3).Value = "1" And Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa1.Cells(j, 12).Value >= maksimum And Sayfa1.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+              Sayfa8.Cells(j, 10).Value = 0
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa1.Cells(j, 12).Value >= maksimum And Sayfa1.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If
+                                         
+    If Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+
+    If Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not Sayfa1.Cells(j, 12).Value <= maksimum And Sayfa1.Cells(j, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+
+Next j
+
+totalVeri = veri_adeti
+
+'2013
+
+For i = 1 To Sayfa2.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+
+Sayfa8.Cells(1, 25).Value = Sayfa8.Cells(1, 25).Value + veri_adeti
+
+m = 2
+For j = totalVeri + 2 To totalVeri + veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa2.Cells(m, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa2.Cells(m, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa2.Cells(m, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa2.Cells(m, 2).Value, 0)
+
+    'Hastaların cinsiyetlerini yazdırma
+
+    If Sayfa2.Cells(m, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+
+    'Parametre değerlerinin yazdırılması
+
+    If Sayfa2.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa2.Cells(m, 12).Value
+    ElseIf Sayfa2.Cells(m, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa2.Cells(m, 12).Value
+    ElseIf Sayfa2.Cells(m, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa2.Cells(m, 12).Value
+    ElseIf Sayfa2.Cells(m, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa2.Cells(m, 12).Value
+    ElseIf Sayfa2.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa2.Cells(m, 12).Value
+    End If
+
+    minimum = Sayfa2.Cells(m, 14).Value
+    maksimum = Sayfa2.Cells(m, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdırılması
+
+    If Sayfa2.Cells(m, 12).Value <= maksimum And Sayfa2.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa2.Cells(m, 12).Value <= maksimum And Sayfa2.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+     If Sayfa8.Cells(j, 3).Value = "1" And Sayfa2.Cells(j, 12).Value <= maksimum And Sayfa2.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa2.Cells(j, 12).Value >= maksimum And Sayfa2.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                Sayfa8.Cells(j, 10).Value = 0
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa2.Cells(j, 12).Value <= maksimum And Sayfa2.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa2.Cells(j, 12).Value >= maksimum And Sayfa2.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If                 
+
+    If (Sayfa2.Cells(m, 12).Value >= minimmum And Sayfa2.Cells(m, 12).Value <= maksimum) And Sayfa2.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not (Sayfa2.Cells(m, 12).Value >= minimmum And Sayfa2.Cells(m, 12).Value <= maksimum) And Sayfa2.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa2.Cells(m, 12).Value <= maksimum And Sayfa2.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa2.Cells(m, 12).Value <= maksimum And Sayfa2.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+
+    If (Sayfa2.Cells(m, 12).Value >= minimmum And Sayfa2.Cells(m, 12).Value <= maksimum) And Sayfa2.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not (Sayfa2.Cells(m, 12).Value >= minimmum And Sayfa2.Cells(m, 12).Value <= maksimum) And Sayfa2.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+
+    m = m + 1
+Next j
+
+totalVeri = totalVeri + veri_adeti
+
+'2014
+
+For i = 1 To Sayfa3.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+
+Sayfa8.Cells(1, 25).Value = Sayfa8.Cells(1, 25).Value + veri_adeti
+
+m = 2
+For j = totalVeri + 2 To totalVeri + veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa3.Cells(m, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa3.Cells(m, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa3.Cells(m, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa3.Cells(m, 2).Value, 0)
+    
+   
+ 'Hastalarin cinsiyetlerini yazdırma
+
+    If Sayfa3.Cells(m, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+
+    'Parametre değerlerinin yazdırılması
+
+    If Sayfa3.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa3.Cells(m, 12).Value
+    ElseIf Sayfa3.Cells(m, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa3.Cells(m, 12).Value
+    ElseIf Sayfa3.Cells(m, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa3.Cells(m, 12).Value
+    ElseIf Sayfa3.Cells(m, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa3.Cells(m, 12).Value
+    ElseIf Sayfa3.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa3.Cells(m, 12).Value
+    End If
+
+    minimum = Sayfa3.Cells(m, 14).Value
+    maksimum = Sayfa3.Cells(m, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdırılması
+
+    If Sayfa3.Cells(m, 12).Value <= maksimum And Sayfa3.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa3.Cells(m, 12).Value <= maksimum And Sayfa3.Cells(m, 11).Value = "CA-15-3" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+    If Sayfa8.Cells(j, 3).Value = "1" And Sayfa3.Cells(j, 12).Value <= maksimum And Sayfa3.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa3.Cells(j, 12).Value >= maksimum And Sayfa3.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                Sayfa8.Cells(j, 10).Value = 0
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa3.Cells(j, 12).Value <= maksimum And Sayfa3.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa3.Cells(j, 12).Value >= maksimum And Sayfa3.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If
+                            
+                            
+    If (Sayfa3.Cells(m, 12).Value >= minimmum And Sayfa3.Cells(m, 12).Value <= maksimum) And Sayfa3.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not (Sayfa3.Cells(m, 12).Value >= minimmum And Sayfa3.Cells(m, 12).Value <= maksimum) And Sayfa3.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa3.Cells(m, 12).Value <= maksimum And Sayfa3.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa3.Cells(m, 12).Value <= maksimum And Sayfa3.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+
+    If (Sayfa3.Cells(m, 12).Value >= minimmum And Sayfa3.Cells(m, 12).Value <= maksimum) And Sayfa3.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not (Sayfa3.Cells(m, 12).Value >= minimmum And Sayfa3.Cells(m, 12).Value <= maksimum) And Sayfa3.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+
+    m = m + 1
+Next j
+
+totalVeri = totalVeri + veri_adeti
+
+'2015
+
+For i = 1 To Sayfa4.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+
+Sayfa8.Cells(1, 25).Value = Sayfa8.Cells(1, 25).Value + veri_adeti
+
+m = 2
+For j = totalVeri + 2 To totalVeri + veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa4.Cells(m, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa4.Cells(m, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa4.Cells(m, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa4.Cells(m, 2).Value, 0)
+    
+    'Hastalarin cinsiyetlerini yazdırma'
+    If Sayfa4.Cells(m, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+
+    'Parametre değerlerinin yazdırılması
+
+    If Sayfa4.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa4.Cells(m, 12).Value
+    ElseIf Sayfa4.Cells(m, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa4.Cells(m, 12).Value
+    ElseIf Sayfa4.Cells(m, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa4.Cells(m, 12).Value
+    ElseIf Sayfa4.Cells(m, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa4.Cells(m, 12).Value
+    ElseIf Sayfa4.Cells(m, 11).Value = "AFP (Alfafetoprotein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa4.Cells(m, 12).Value
+    End If
+
+    minimum = Sayfa4.Cells(m, 14).Value
+    maksimum = Sayfa4.Cells(m, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdirilmasi'
+    If Sayfa4.Cells(m, 12).Value <= maksimum And Sayfa4.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa4.Cells(m, 12).Value <= maksimum And Sayfa4.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+    If Sayfa8.Cells(j, 3).Value = "1" And Sayfa4.Cells(j, 12).Value <= maksimum And Sayfa4.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa4.Cells(j, 12).Value >= maksimum And Sayfa4.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                Sayfa8.Cells(j, 10).Value = 0
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa4.Cells(j, 12).Value <= maksimum And Sayfa4.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa4.Cells(j, 12).Value >= maksimum And Sayfa4.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If
+
+    If (Sayfa4.Cells(m, 12).Value >= minimmum And Sayfa4.Cells(m, 12).Value <= maksimum) And Sayfa4.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not (Sayfa4.Cells(m, 12).Value >= minimmum And Sayfa4.Cells(m, 12).Value <= maksimum) And Sayfa4.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa4.Cells(m, 12).Value <= maksimum And Sayfa4.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa4.Cells(m, 12).Value <= maksimum And Sayfa4.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+
+    If (Sayfa4.Cells(m, 12).Value >= minimmum And Sayfa4.Cells(m, 12).Value <= maksimum) And Sayfa4.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not (Sayfa4.Cells(m, 12).Value >= minimmum And Sayfa4.Cells(m, 12).Value <= maksimum) And Sayfa4.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+
+    m = m + 1
+Next j
+
+totalVeri = totalVeri + veri_adeti
+
+'2016
+
+For i = 1 To Sayfa5.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+
+Sayfa8.Cells(1, 25).Value = Sayfa8.Cells(1, 25).Value + veri_adeti
+
+m = 2
+For j = totalVeri + 2 To totalVeri + veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa5.Cells(m, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa5.Cells(m, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa5.Cells(m, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa5.Cells(m, 2).Value, 0)
+
+   'Hastalarin cinsiyetlerini yazdırma'
+    If Sayfa5.Cells(m, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+    
+    'Parametre değerlerinin yazdirilmasi'
+    If Sayfa5.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa5.Cells(m, 12).Value
+    ElseIf Sayfa5.Cells(m, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa5.Cells(m, 12).Value
+    ElseIf Sayfa5.Cells(m, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa5.Cells(m, 12).Value
+    ElseIf Sayfa5.Cells(m, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa5.Cells(m, 12).Value
+    ElseIf Sayfa5.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa5.Cells(m, 12).Value
+    End If
+
+    minimum = Sayfa5.Cells(m, 14).Value
+    maksimum = Sayfa5.Cells(m, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdirilmasi'
+    If Sayfa5.Cells(m, 12).Value <= maksimum And Sayfa5.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa5.Cells(m, 12).Value <= maksimum And Sayfa5.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+    If Sayfa8.Cells(j, 3).Value = "1" And Sayfa5.Cells(j, 12).Value <= maksimum And Sayfa5.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa5.Cells(j, 12).Value >= maksimum And Sayfa5.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                Sayfa8.Cells(j, 10).Value = 0
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa5.Cells(j, 12).Value <= maksimum And Sayfa5.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa5.Cells(j, 12).Value >= maksimum And Sayfa5.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If
+
+    If (Sayfa5.Cells(m, 12).Value >= minimmum And Sayfa5.Cells(m, 12).Value <= maksimum) And Sayfa5.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not (Sayfa5.Cells(m, 12).Value >= minimmum And Sayfa5.Cells(m, 12).Value <= maksimum) And Sayfa5.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa5.Cells(m, 12).Value <= maksimum And Sayfa5.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa5.Cells(m, 12).Value <= maksimum And Sayfa5.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+    If (Sayfa5.Cells(m, 12).Value >= minimmum And Sayfa5.Cells(m, 12).Value <= maksimum) And Sayfa5.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not (Sayfa5.Cells(m, 12).Value >= minimmum And Sayfa5.Cells(m, 12).Value <= maksimum) And Sayfa5.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+
+    m = m + 1
+Next j
+
+totalVeri = totalVeri + veri_adeti
+
+'2017
+
+For i = 1 To Sayfa6.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+
+Sayfa8.Cells(1, 25).Value = Sayfa8.Cells(1, 25).Value + veri_adeti
+
+m = 2
+For j = totalVeri + 2 To totalVeri + veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa6.Cells(m, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa6.Cells(m, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa6.Cells(m, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa6.Cells(m, 2).Value, 0)
+
+   'Hastalarin cinsiyetlerini yazdırma'
+    If Sayfa6.Cells(m, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+    
+'Parametre değerlerinin yazdırılması
+
+    If Sayfa6.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa6.Cells(m, 12).Value
+    ElseIf Sayfa6.Cells(m, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa6.Cells(m, 12).Value
+    ElseIf Sayfa6.Cells(m, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa6.Cells(m, 12).Value
+    ElseIf Sayfa6.Cells(m, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa6.Cells(m, 12).Value
+    ElseIf Sayfa6.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa6.Cells(m, 12).Value
+    End If
+
+    minimum = Sayfa6.Cells(m, 14).Value
+    maksimum = Sayfa6.Cells(m, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdırılması
+
+    If Sayfa6.Cells(m, 12).Value <= maksimum And Sayfa6.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa6.Cells(m, 12).Value <= maksimum And Sayfa6.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+    If Sayfa8.Cells(j, 3).Value = "1" And Sayfa6.Cells(j, 12).Value <= maksimum And Sayfa6.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa6.Cells(j, 12).Value >= maksimum And Sayfa6.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                Sayfa8.Cells(j, 10).Value = 0
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa6.Cells(j, 12).Value <= maksimum And Sayfa6.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa6.Cells(j, 12).Value >= maksimum And Sayfa6.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If
+
+    If (Sayfa6.Cells(m, 12).Value >= minimmum And Sayfa6.Cells(m, 12).Value <= maksimum) And Sayfa6.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not (Sayfa6.Cells(m, 12).Value >= minimmum And Sayfa6.Cells(m, 12).Value <= maksimum) And Sayfa6.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa6.Cells(m, 12).Value <= maksimum And Sayfa6.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa6.Cells(m, 12).Value <= maksimum And Sayfa6.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+
+    If (Sayfa6.Cells(m, 12).Value >= minimmum And Sayfa6.Cells(m, 12).Value <= maksimum) And Sayfa6.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not (Sayfa6.Cells(m, 12).Value >= minimmum And Sayfa6.Cells(m, 12).Value <= maksimum) And Sayfa6.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+m = m + 1
+Next j
+
+totalVeri = totalVeri + veri_adeti
+
+'2018 
+
+For i = 1 To Sayfa7.Cells(65536, 1).End(xlUp).Row
+Next i
+
+veri_adeti = i - 2
+
+Sayfa8.Cells(1, 25).Value = Sayfa8.Cells(1, 25).Value + veri_adeti
+
+m = 2
+For j = totalVeri + 2 To totalVeri + veri_adeti + 1
+    Sayfa8.Cells(j, 14).Value = Sayfa7.Cells(m, 8).Value
+    Sayfa8.Cells(j, 15).Value = Sayfa7.Cells(m, 9).Value
+    Sayfa8.Cells(j, 1).Value = Sayfa7.Cells(m, 1).Value
+    Sayfa8.Cells(j, 2).Value = WorksheetFunction.Round(Sayfa7.Cells(m, 2).Value, 0)
+
+   'Hastalarin cinsiyetlerini yazdırma'
+    If Sayfa7.Cells(m, 3).Value = "Erkek" Then
+       Sayfa8.Cells(j, 3).Value = 1
+    Else
+        Sayfa8.Cells(j, 3).Value = 0
+    End If
+    
+    'Parametre değerlerinin yazdirilmasi'
+    If Sayfa7.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 4).Value = Sayfa7.Cells(m, 12).Value
+    ElseIf Sayfa7.Cells(m, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 5).Value = Sayfa7.Cells(m, 12).Value
+    ElseIf Sayfa7.Cells(m, 11).Value = "CRP" Then
+        Sayfa8.Cells(j, 6).Value = Sayfa7.Cells(m, 12).Value
+    ElseIf Sayfa7.Cells(m, 11).Value = "CEA" Then
+        Sayfa8.Cells(j, 7).Value = Sayfa7.Cells(m, 12).Value
+    ElseIf Sayfa7.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+        Sayfa8.Cells(j, 8).Value = Sayfa7.Cells(m, 12).Value
+    End If
+
+    minimum = Sayfa7.Cells(m, 14).Value
+    maksimum = Sayfa7.Cells(m, 15).Value
+
+    'Parametre degerleri hangi aralıkta oldugunun yazdirilmasi'
+    If Sayfa7.Cells(m, 12).Value <= maksimum And Sayfa7.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 1
+    ElseIf Not Sayfa7.Cells(m, 12).Value <= maksimum And Sayfa7.Cells(m, 11).Value = "CA-19-9" Then
+       Sayfa8.Cells(j, 9).Value = 0
+    End If
+
+   If Sayfa8.Cells(j, 3).Value = "1" And Sayfa7.Cells(j, 12).Value <= maksimum And Sayfa7.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+        Sayfa8.Cells(j, 10).Value = 1
+            ElseIf Sayfa8.Cells(j, 3).Value = "1" And Sayfa7.Cells(j, 12).Value >= maksimum And Sayfa7.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                Sayfa8.Cells(j, 10).Value = 1
+                    ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa7.Cells(j, 12).Value <= maksimum And Sayfa7.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                        Sayfa8.Cells(j, 10).Value = 1
+                            ElseIf Sayfa8.Cells(j, 3).Value = "0" And Sayfa7.Cells(j, 12).Value >= maksimum And Sayfa7.Cells(j, 11).Value = " ALT ( Alanin Aminotransferaz )" Then
+                                Sayfa8.Cells(j, 10).Value = 0
+                            End If
+
+    If (Sayfa7.Cells(m, 12).Value >= minimmum And Sayfa7.Cells(m, 12).Value <= maksimum) And Sayfa7.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 1
+    ElseIf Not (Sayfa7.Cells(m, 12).Value >= minimmum And Sayfa7.Cells(m, 12).Value <= maksimum) And Sayfa7.Cells(m, 11).Value = "CRP" Then
+       Sayfa8.Cells(j, 11).Value = 0
+    End If
+
+    If Sayfa7.Cells(m, 12).Value <= maksimum And Sayfa7.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 1
+    ElseIf Not Sayfa7.Cells(m, 12).Value <= maksimum And Sayfa7.Cells(m, 11).Value = "CEA" Then
+       Sayfa8.Cells(j, 12).Value = 0
+    End If
+
+    If (Sayfa7.Cells(m, 12).Value >= minimmum And Sayfa7.Cells(m, 12).Value <= maksimum) And Sayfa7.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 1
+    ElseIf Not (Sayfa7.Cells(m, 12).Value >= minimmum And Sayfa7.Cells(m, 12).Value <= maksimum) And Sayfa7.Cells(m, 11).Value = "AFP  (Alfa - Feto Protein)" Then
+       Sayfa8.Cells(j, 13).Value = 0
+    End If
+
+    m = m + 1
+Next j
+
+
+End Sub
+
+ 
+Sub Sınıflandırma()
+
+Dim i As Long
+Dim j As Long
+Dim k As Long
+Dim m As Long
+Dim h As Long
+Dim yedek As Long
+Dim t As Long
+Dim adet As Long
+Dim veri_adeti As Long
+Dim sutunSayisi As Long
+Dim hastaID As Long
+Dim hastaToplam As Long
+Dim yasToplam As Long
+Dim satir As Long
+
+Dim gelisSayisi As Long
+Dim gelisAdet As Long
+Dim yedekTarih As String
+
+satir = 2
+For i = 1 To Sayfa9.Cells(100000, 1).End(xlUp).Row
+Next i
+veri_adeti = i - 2
+
+'Parametre degerlerinin dolu olması halinde yazdılacak olan hastaları bulma'
+j = 2
+For i = 2 To veri_adeti + 1
+    If (Sayfa10.Cells(i, 4).Value > 0 And Sayfa10.Cells(i, 5).Value > 0 And Sayfa10.Cells(i, 6).Value > 0 And Sayfa10.Cells(i, 7).Value > 0 And Sayfa10.Cells(i, 8).Value > 0) Then
+           
+        For k = 1 To 15
+            Sayfa11.Cells(j, k).Value = Sayfa10.Cells(i, k).Value
+        Next k
+        
+        j = j + 1
+        
+    End If
+
+Next i
+
+End Sub
